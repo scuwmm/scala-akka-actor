@@ -7,6 +7,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import com.typesafe.config.ConfigFactory
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
+import io.demo.actor.LoopActor
 import io.demo.actor.device.{DeviceActor, DeviceGroupActor}
 import io.demo.actor.hello.HelloServiceActor
 import io.demo.actor.hello.HelloServiceActor._
@@ -26,10 +27,12 @@ object ServerStart extends App {
       implicit val classicSystem = context.system.classicSystem
 
       val server = new ServerStart()
-      server.sayHello()
-      server.sayHelloAndReply()
+//      server.sayHello()
+//      server.sayHelloAndReply()
+//
+//      server.deviceRegister()
 
-      server.deviceRegister()
+      server.loopActor()
 
       Behaviors.receiveMessage { case Done => Behaviors.stopped }
     },
@@ -45,6 +48,10 @@ object ServerStart extends App {
 class ServerStart(implicit system: ActorSystem[Nothing], context: ActorContext[_], ec: ExecutionContext) {
 
   private[this] implicit val timeout: Timeout = Timeout(10.seconds)
+
+  def loopActor(): Unit = {
+    system.systemActorOf(LoopActor.apply(), "loop-actor")
+  }
 
   def sayHello(): Unit = {
     val helloActor = system.systemActorOf(HelloServiceActor.apply(), "hello-actor-1")
